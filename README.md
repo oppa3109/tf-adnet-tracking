@@ -23,6 +23,14 @@ Tensorflow Implementation of 'Action-Decision Networks for Visual Tracking with 
   
   - [ ] Faster Inference
 
+## Run
+
+### OTB100 Dataset
+
+```
+$ python runner.py by_dataset  --vid-path=./data/freeman1/
+```
+
 ## References
 
 - Action-Decision Networks for Visual Tracking with Deep Reinforcement Learning (CVPR201) : http://openaccess.thecvf.com/content_cvpr_2017/papers/Yun_Action-Decision_Networks_for_CVPR_2017_paper.pdf
