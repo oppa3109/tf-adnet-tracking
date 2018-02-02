@@ -12,11 +12,15 @@ Tensorflow Implementation of 'Action-Decision Networks for Visual Tracking with 
 [x] Network Architecture
 
 -[ ] Training Code
+
   -[ ] Reproduce Paper Result
 
 -[x] Inference Code
+
   -[x] Converting Original Weights to Tensorflow
+  
   -[x] Online Learning(finetuning)
+  
   -[ ] Faster Inference
 
 ## References
