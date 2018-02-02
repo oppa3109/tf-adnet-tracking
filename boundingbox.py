@@ -227,25 +227,27 @@ class BoundingBox:
 
     def do_action(self, imgwh, action_idx):
         action_ratios = tuple([ADNetConf.get()['action_move'][x] for x in 'xywh'])
-        center_xy = self.xy + self.wh * 0.5
 
-        deltas_xy = self.wh * action_ratios[:2]
-        deltas_wh = self.wh * action_ratios[2:]
-        deltas_xy.max(1)
-        deltas_wh.max(2)
-        deltas = np.array(list(deltas_xy) + list(deltas_wh), dtype=np.float16)
+        if action_idx < 8:
+            deltas_xy = self.wh * action_ratios[:2]
+            deltas_xy.max(1)
+            actual_deltas = ADNetwork.ACTIONS[action_idx][:2] * (deltas_xy.x, deltas_xy.y)
+            moved_xy = self.xy + actual_deltas
+            new_box = BoundingBox(moved_xy.x, moved_xy.y, self.wh.x, self.wh.y)
+        elif action_idx == 8:
+            new_box = BoundingBox(self.xy.x, self.xy.y, self.wh.x, self.wh.y)
+        else:
+            deltas_wh = self.wh * action_ratios[2:]
+            deltas_wh.max(2)
+            deltas_wh_scaled = ADNetwork.ACTIONS[action_idx][2:] * (deltas_wh.x, deltas_wh.y)
+            moved_xy = self.xy + -1 * deltas_wh_scaled / 2
+            moved_wh = self.wh + deltas_wh_scaled
 
-        actual_deltas = ADNetwork.ACTIONS[action_idx] * deltas
-        moved_xy = center_xy + actual_deltas[:2]
-        moved_wh = self.wh + actual_deltas[2:]
+            new_box = BoundingBox(moved_xy.x, moved_xy.y, moved_wh.x, moved_wh.y)
 
-        if action_idx == 0:
-            pass
-
-        box = BoundingBox(moved_xy.x - moved_wh.x / 2.0, moved_xy.y - moved_wh.y / 2.0, moved_wh.x, moved_wh.y)
         if imgwh:
-            box.fit_image(imgwh)
-        return box
+            new_box.fit_image(imgwh)
+        return new_box
 
     def gen_noise_samples(self, imgwh, noise_type, num, **kwargs):
         center_xy = self.xy + self.wh * 0.5

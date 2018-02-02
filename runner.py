@@ -62,7 +62,7 @@ class ADNetRunner:
 
         self.stopwatch = StopWatchManager()
 
-    def by_dataset(self, vid_path):
+    def by_dataset(self, vid_path='./data/freeman1/'):
         assert os.path.exists(vid_path)
 
         gt_boxes = BoundingBox.read_vid_gt(vid_path)
@@ -81,8 +81,8 @@ class ADNetRunner:
             # tracking
             predicted_box = self.tracking(img, curr_bbox)
             self.show(img, gt_box=gt_box, predicted_box=predicted_box)
+            # cv2.imwrite('/Users/ildoonet/Downloads/aaa/%d.jpg' % self.iteration, img)
             curr_bbox = predicted_box
-            print(curr_bbox)
         self.stopwatch.stop('total')
 
         _logger.info('----')
@@ -233,7 +233,11 @@ class ADNetRunner:
             prev_bbox = curr_bbox
             curr_bbox = curr_bbox.do_action(self.imgwh, action_idx)
             if action_idx != ADNetwork.ACTION_IDX_STOP:
-                assert prev_bbox != curr_bbox
+                if prev_bbox == curr_bbox:
+                    print('action idx', action_idx)
+                    print(prev_bbox)
+                    print(curr_bbox)
+                    raise Exception('box not moved.')
 
             # oscillation check
             if action_idx != ADNetwork.ACTION_IDX_STOP and curr_bbox in boxes:
@@ -284,7 +288,6 @@ class ADNetRunner:
             self.stopwatch.stop('tracking.save_samples.feat')
 
         # online finetune
-        self.stopwatch.start('tracking.online_finetune')
         if self.iteration % ADNetConf.g()['finetune']['interval'] == 0 or is_tracked is False:
             img_pos, img_neg = [], []
             pos_boxes, neg_boxes, pos_lb_action = [], [], []
@@ -300,14 +303,14 @@ class ADNetRunner:
                     break
                 neg_boxes.extend(self.histories[-(i+1)][1])
                 img_neg.extend([self.histories[-(i+1)][3]]*len(self.histories[-(i+1)][1]))
-
+            self.stopwatch.start('tracking.online_finetune')
             self._finetune_fc(
                 (img_pos, img_neg), pos_boxes, neg_boxes, pos_lb_action,
                 ADNetConf.get()['finetune']['learning_rate'],
                 ADNetConf.get()['finetune']['iter']
             )
             _logger.debug('finetuned')
-        self.stopwatch.stop('tracking.online_finetune')
+            self.stopwatch.stop('tracking.online_finetune')
 
         cv2.imshow('patch', patch)
         return curr_bbox
@@ -348,8 +351,8 @@ class ADNetRunner:
 if __name__ == '__main__':
     ADNetConf.get('./conf/repo.yaml')
 
-    random.seed(1958)
-    np.random.seed(1958)
-    tf.set_random_seed(1958)
+    random.seed(1258)
+    np.random.seed(1258)
+    tf.set_random_seed(1258)
 
     fire.Fire(ADNetRunner)

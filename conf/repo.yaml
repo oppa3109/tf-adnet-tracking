@@ -5,7 +5,7 @@ initial_finetune:
   neg_thresh: 0.3
   pos_num: 200
   neg_num: 150
-  iter: 20 # as in the original paper
+  iter: 20
   learning_rate: 0.0003
 
 finetune:
@@ -16,7 +16,7 @@ finetune:
   short_term: 20
   pos_num: 30
   neg_num: 15
-  iter: 20  # as in the original paper
+  iter: 20
   learning_rate: 0.0001
 
 action_move:
@@ -27,7 +27,7 @@ action_move:
 
 action_history: 10
 redetection:
-  samples: 256
+  samples: 64 # 256
 
 predict:
   roi_zoom: 1.4
